@@ -21,7 +21,7 @@ fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<
     let mut content = format!("{}{}{} {}", "P3", NL, w, h);
     let pix_count = colors.len() / 3;
 
-    todo!();
+    todo!(); // use iter and range to write colors
 
     write!(f, "{}", content).unwrap();
     Ok(())
@@ -39,3 +39,4 @@ mod tests {
         assert!(res.is_ok())
     }
 }
+
