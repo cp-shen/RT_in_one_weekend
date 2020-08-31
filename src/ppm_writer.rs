@@ -20,10 +20,11 @@ fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<
     let mut f = fs::OpenOptions::new()
         .write(true)
         .create(true)
+        .truncate(true)
         .open(path)
         .expect(format!("fail to open file {}", path.to_str().unwrap()).as_str());
 
-    let header = format!("{} {} {} {}", "P3", NL, w, h);
+    let header = format!("{} {} {} {} {} {}", "P3", NL, w, h, NL, 255);
 
     let mut content = &mut String::new();
     content = colors
@@ -31,10 +32,10 @@ fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<
         .enumerate()
         .map(|(i, color)| {
             let mut color_str = String::new();
-            if i % 3 == 0 {
+            if i % (3 * w) == 0 {
                 color_str.push_str(NL);
             }
-            color_str.push_str(format!("{} ", color).as_str());
+            color_str.push_str(format!("{}\t", color).as_str());
             color_str
         })
         .fold(content, |str, str_a| {
@@ -54,12 +55,16 @@ mod tests {
 
     #[test]
     fn test() {
-        let colors = [255_u8, 255_u8, 0_u8]; // yellow
+        let yellow = [255_u8, 255_u8, 0_u8];
+        let white = [255_u8, 255_u8, 255_u8];
         let mut colors_vec = Vec::<u8>::new();
         for x in 0..9 {
-            colors_vec.push(colors[x % 3]);
+            colors_vec.push(yellow[x % 3]);
         }
-        let res = write_ppm(3, 1, &colors_vec, Path::new("test.ppm"));
+        for x in 0..9 {
+            colors_vec.push(white[x % 3]);
+        }
+        let res = write_ppm(3, 2, &colors_vec, Path::new("test.ppm"));
         assert!(res.is_ok())
     }
 }
