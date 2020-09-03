@@ -1,7 +1,9 @@
+#![allow(dead_code)]
+
 use std::ops;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Vec3(f32, f32, f32);
+pub struct Vec3(pub f32, pub f32, pub f32);
 
 pub type Color = Vec3;
 pub type Point3 = Vec3;
@@ -56,31 +58,31 @@ impl ops::MulAssign<f32> for Vec3 {
 }
 
 impl Vec3 {
-    fn x(&self) -> f32 {
+    pub fn x(&self) -> f32 {
         self.0
     }
 
-    fn y(&self) -> f32 {
+    pub fn y(&self) -> f32 {
         self.1
     }
 
-    fn z(&self) -> f32 {
+    pub fn z(&self) -> f32 {
         self.2
     }
 
-    fn length_sqared(&self) -> f32 {
+    pub fn length_sqared(&self) -> f32 {
         self.0 * self.0 + self.1 * self.1 + self.2 * self.2
     }
 
-    fn length(&self) -> f32 {
+    pub fn length(&self) -> f32 {
         self.length_sqared().sqrt()
     }
 
-    fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(&self, other: &Self) -> f32 {
         self.0 * other.0 + self.1 * other.1 + self.2 * other.2
     }
 
-    fn cross(&self, other: &Self) -> Vec3 {
+    pub fn cross(&self, other: &Self) -> Vec3 {
         Vec3(
             self.1 * other.2 - self.2 * other.1,
             self.2 * other.0 - self.0 * other.2,
@@ -88,16 +90,21 @@ impl Vec3 {
         )
     }
 
-    fn unit_vector(&self) -> Vec3 {
+    pub fn unit_vector(&self) -> Vec3 {
         assert!(self.length() > 0_f32, "Vector length is zero!");
 
         *self * (1_f32 / self.length())
     }
 
-    fn float_color_to_8bit(&self) -> Vec<u8> {
+    pub fn float_color_to_8bit(&self) -> Vec<u8> {
         let r = self.0.min(1_f32).max(0_f32) * 255_f32;
-        let g = self.0.min(1_f32).max(0_f32) * 255_f32;
-        let b = self.0.min(1_f32).max(0_f32) * 255_f32;
+        let g = self.1.min(1_f32).max(0_f32) * 255_f32;
+        let b = self.2.min(1_f32).max(0_f32) * 255_f32;
         vec![r.round() as u8, g.round() as u8, b.round() as u8]
+    }
+
+    pub fn lerp(a: Self, b: Self, t: f32) -> Vec3 {
+        let t_clamped = t.min(1_f32).max(0_f32);
+        a * (1_f32 - t_clamped) + b * t_clamped
     }
 }

@@ -1,6 +1,6 @@
-use std::path::Path;
 use std::fs;
 use std::io::Write;
+use std::path::Path;
 
 #[cfg(windows)]
 const NL: &'static str = "\r\n";
@@ -8,7 +8,34 @@ const NL: &'static str = "\r\n";
 const NL: &'static str = "\n";
 
 #[allow(dead_code)]
-fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<()> {
+pub fn write_png(
+    w: usize,
+    h: usize,
+    colors: &[u8],
+    path: &Path,
+) -> std::io::Result<()> {
+    use image::{Rgb, RgbImage};
+    let mut img = RgbImage::new(w as u32, h as u32);
+    for row_idx in 0..h {
+        for col_idx in 0..w {
+            let r = colors[(row_idx * w + col_idx) * 3 + 0];
+            let g = colors[(row_idx * w + col_idx) * 3 + 1];
+            let b = colors[(row_idx * w + col_idx) * 3 + 2];
+            let color = Rgb([r, g, b]);
+            img.put_pixel(col_idx as u32, row_idx as u32, color);
+        }
+    }
+    img.save(path).unwrap();
+    Ok(())
+}
+
+#[allow(dead_code)]
+pub fn write_ppm(
+    w: usize,
+    h: usize,
+    colors: &[u8],
+    path: &Path,
+) -> std::io::Result<()> {
     assert!(
         colors.len() == w * h * 3,
         "len of colors {} is not equal to w:{} * h:{} * 3",
@@ -22,7 +49,9 @@ fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<
         .create(true)
         .truncate(true)
         .open(path)
-        .expect(format!("fail to open file {}", path.to_str().unwrap()).as_str());
+        .expect(
+            format!("fail to open file {}", path.to_str().unwrap()).as_str(),
+        );
 
     let header = format!("{} {} {} {} {} {}", "P3", NL, w, h, NL, 255);
 
@@ -50,7 +79,7 @@ fn write_ppm(w: usize, h: usize, colors: &[u8], path: &Path) -> std::io::Result<
 
 #[cfg(test)]
 mod tests {
-    use crate::ppm_writer::write_ppm;
+    use crate::image_writer::write_ppm;
     use std::path::Path;
 
     #[test]
@@ -64,7 +93,7 @@ mod tests {
         for x in 0..9 {
             colors_vec.push(white[x % 3]);
         }
-        let res = write_ppm(3, 2, &colors_vec, Path::new("test.ppm"));
+        let res = write_ppm(3, 2, &colors_vec, Path::new("images/test.ppm"));
         assert!(res.is_ok())
     }
 }

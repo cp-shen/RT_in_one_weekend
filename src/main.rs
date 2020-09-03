@@ -1,4 +1,4 @@
-mod ppm_writer;
+mod image_writer;
 mod ray;
 mod vec3;
 
