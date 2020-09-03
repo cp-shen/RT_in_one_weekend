@@ -7,6 +7,12 @@ const NL: &'static str = "\r\n";
 #[cfg(not(windows))]
 const NL: &'static str = "\n";
 
+struct Pixel {
+    x: u32,
+    y: u32,
+    color: crate::vec3::Color,
+}
+
 #[allow(dead_code)]
 pub fn write_png(
     w: usize,
@@ -83,7 +89,7 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    fn test() {
+    fn test_simple_ppm() {
         let yellow = [255_u8, 255_u8, 0_u8];
         let white = [255_u8, 255_u8, 255_u8];
         let mut colors_vec = Vec::<u8>::new();
@@ -93,7 +99,17 @@ mod tests {
         for x in 0..9 {
             colors_vec.push(white[x % 3]);
         }
-        let res = write_ppm(3, 2, &colors_vec, Path::new("images/test.ppm"));
+        let res =
+            write_ppm(3, 2, &colors_vec, Path::new("images/test_simle.ppm"));
         assert!(res.is_ok())
+    }
+
+    #[test]
+    fn test_gradient() {
+        let image_width = 256;
+        let image_height = 256;
+        let color_vec = Vec::<u8>::new();
+
+        (image_width).map(|x|{(0..image_height)});
     }
 }

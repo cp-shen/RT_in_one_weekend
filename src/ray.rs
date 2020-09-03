@@ -8,8 +8,19 @@ struct Ray {
 }
 
 impl Ray {
-    fn at(&self, t: f32) -> vec3::Point3 {
+    pub fn at(&self, t: f32) -> vec3::Point3 {
         self.orig + self.dir * t
+    }
+
+    pub fn hit_sphere(&self, center: vec3::Point3, radius: f32) -> bool {
+        let r = &self;
+        let oc = r.orig - center;
+        let a = r.dir.dot(r.dir);
+        let b = 2_f32 * oc.dot(r.dir);
+        let c = oc.dot(oc) - radius * radius;
+        let discriminant = b * b - 4_f32 * a * c;
+
+        discriminant > 0_f32
     }
 }
 
@@ -21,6 +32,10 @@ mod tests {
     use crate::vec3::Vec3;
 
     fn ray_color(r: &Ray) -> Color {
+        if r.hit_sphere(Vec3(0_f32, 0_f32, -1_f32), 0.5_f32) {
+            return Vec3(1.0_f32, 0_f32, 0_f32)
+        }
+
         let unit_direction = r.dir.unit_vector();
         let t: f32 = 0.5_f32 * (unit_direction.y() + 1_f32);
 

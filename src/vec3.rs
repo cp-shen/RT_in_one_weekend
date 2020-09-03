@@ -78,11 +78,11 @@ impl Vec3 {
         self.length_sqared().sqrt()
     }
 
-    pub fn dot(&self, other: &Self) -> f32 {
+    pub fn dot(&self, other: Self) -> f32 {
         self.0 * other.0 + self.1 * other.1 + self.2 * other.2
     }
 
-    pub fn cross(&self, other: &Self) -> Vec3 {
+    pub fn cross(&self, other: Self) -> Vec3 {
         Vec3(
             self.1 * other.2 - self.2 * other.1,
             self.2 * other.0 - self.0 * other.2,
