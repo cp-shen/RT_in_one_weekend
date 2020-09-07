@@ -26,14 +26,13 @@ impl Ray {
 
 #[cfg(test)]
 mod tests {
+    use crate::image_writer::*;
     use crate::ray::Ray;
-    use crate::vec3::Color;
-    use crate::vec3::Point3;
-    use crate::vec3::Vec3;
+    use crate::vec3::*;
 
     fn ray_color(r: &Ray) -> Color {
         if r.hit_sphere(Vec3(0_f32, 0_f32, -1_f32), 0.5_f32) {
-            return Vec3(1.0_f32, 0_f32, 0_f32)
+            return Vec3(1.0_f32, 0_f32, 0_f32);
         }
 
         let unit_direction = r.dir.unit_vector();
@@ -67,7 +66,7 @@ mod tests {
             - Vec3(0_f32, 0_f32, focal_length);
 
         // Render
-        let mut col_vec = Vec::<u8>::new();
+        let mut col_vec = Vec::<Pixel>::new();
         for j in (0..image_height).rev() {
             println!("Scanlines remaining: {}", j);
             for i in 0..image_width {
@@ -79,20 +78,21 @@ mod tests {
                         - origin,
                 };
                 let color = ray_color(&r);
-                col_vec.append(&mut color.float_color_to_8bit());
+                col_vec.push(Pixel { color, x: i, y: j });
             }
         }
+
         let res = crate::image_writer::write_ppm(
-            image_width as usize,
-            image_height as usize,
+            image_width,
+            image_height,
             &col_vec,
             std::path::Path::new("images/blue_sky.ppm"),
         );
         assert!(res.is_ok());
 
         let res = crate::image_writer::write_png(
-            image_width as usize,
-            image_height as usize,
+            image_width,
+            image_height,
             &col_vec,
             std::path::Path::new("images/blue_sky.png"),
         );

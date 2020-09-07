@@ -7,45 +7,44 @@ const NL: &'static str = "\r\n";
 #[cfg(not(windows))]
 const NL: &'static str = "\n";
 
-struct Pixel {
-    x: u32,
-    y: u32,
-    color: crate::vec3::Color,
+#[derive(Copy, Clone)]
+pub struct Pixel {
+    pub x: u32, //left is zero
+    pub y: u32, //bottom is zero
+    pub color: crate::vec3::Color,
 }
 
 #[allow(dead_code)]
 pub fn write_png(
-    w: usize,
-    h: usize,
-    colors: &[u8],
+    w: u32,
+    h: u32,
+    pixels: &[Pixel],
     path: &Path,
 ) -> std::io::Result<()> {
     use image::{Rgb, RgbImage};
     let mut img = RgbImage::new(w as u32, h as u32);
-    for row_idx in 0..h {
-        for col_idx in 0..w {
-            let r = colors[(row_idx * w + col_idx) * 3 + 0];
-            let g = colors[(row_idx * w + col_idx) * 3 + 1];
-            let b = colors[(row_idx * w + col_idx) * 3 + 2];
-            let color = Rgb([r, g, b]);
-            img.put_pixel(col_idx as u32, row_idx as u32, color);
-        }
-    }
+    pixels.iter().for_each(|p| {
+        assert!(p.x < w);
+        assert!(p.y < h);
+        let c = p.color.float_color_to_8bit();
+        let color = Rgb([c.0, c.1, c.2]);
+        img.put_pixel(p.x, h - p.y - 1, color);
+    });
     img.save(path).unwrap();
     Ok(())
 }
 
 #[allow(dead_code)]
 pub fn write_ppm(
-    w: usize,
-    h: usize,
-    colors: &[u8],
+    w: u32,
+    h: u32,
+    pixels: &[Pixel],
     path: &Path,
 ) -> std::io::Result<()> {
     assert!(
-        colors.len() == w * h * 3,
-        "len of colors {} is not equal to w:{} * h:{} * 3",
-        colors.len(),
+        pixels.len() as u32 == w * h,
+        "len of pixels {} is not equal to w:{} * h:{}",
+        pixels.len(),
         w,
         h
     );
@@ -62,15 +61,28 @@ pub fn write_ppm(
     let header = format!("{} {} {} {} {} {}", "P3", NL, w, h, NL, 255);
 
     let mut content = &mut String::new();
-    content = colors
+    let mut pixels_sorted = pixels.to_vec();
+    pixels_sorted.sort_by(|a, b| {
+        if a.y != b.y {
+            return b.y.partial_cmp(&a.y).unwrap(); //reverse
+        } else if a.x != b.x {
+            return a.x.partial_cmp(&b.x).unwrap();
+        } else {
+            return std::cmp::Ordering::Equal;
+        }
+    });
+    content = pixels_sorted
         .iter()
         .enumerate()
-        .map(|(i, color)| {
+        .map(|(i, pixel)| {
             let mut color_str = String::new();
-            if i % (3 * w) == 0 {
+            if i as u32 % w == 0 {
                 color_str.push_str(NL);
             }
-            color_str.push_str(format!("{}\t", color).as_str());
+            let color = pixel.color.float_color_to_8bit();
+            color_str.push_str(
+                format!("{}\t{}\t{}\t", color.0, color.1, color.2).as_str(),
+            );
             color_str
         })
         .fold(content, |str, str_a| {
@@ -85,31 +97,55 @@ pub fn write_ppm(
 
 #[cfg(test)]
 mod tests {
-    use crate::image_writer::write_ppm;
+    use super::Pixel;
+    use crate::image_writer::*;
+    use crate::vec3::*;
     use std::path::Path;
 
     #[test]
     fn test_simple_ppm() {
-        let yellow = [255_u8, 255_u8, 0_u8];
-        let white = [255_u8, 255_u8, 255_u8];
-        let mut colors_vec = Vec::<u8>::new();
-        for x in 0..9 {
-            colors_vec.push(yellow[x % 3]);
+        let yellow = Color::new(1_f32, 1_f32, 0_f32);
+        let white = Color::new(1_f32, 1_f32, 1_f32);
+
+        let mut colors_vec = Vec::<Pixel>::new();
+        for x in 0..100 {
+            for y in 0..100 {
+                let color = if y < 50_u32 { yellow } else { white };
+                let p = Pixel { color, x, y };
+                colors_vec.push(p);
+            }
         }
-        for x in 0..9 {
-            colors_vec.push(white[x % 3]);
-        }
-        let res =
-            write_ppm(3, 2, &colors_vec, Path::new("images/test_simle.ppm"));
+        let res = write_ppm(
+            100,
+            100,
+            &colors_vec,
+            Path::new("images/test_simple.ppm"),
+        );
         assert!(res.is_ok())
     }
 
     #[test]
     fn test_gradient() {
-        let image_width = 256;
-        let image_height = 256;
-        let color_vec = Vec::<u8>::new();
+        let image_width: u32 = 256;
+        let image_height: u32 = 256;
+        let mut colors_vec = Vec::<Pixel>::new();
 
-        (image_width).map(|x|{(0..image_height)});
+        for x in 0..image_width {
+            for y in 0..image_height {
+                let r = x as f32 / (image_width - 1) as f32;
+                let g = y as f32 / (image_height - 1) as f32;
+                let b = 0.25_f32;
+                let color = Color::new(r, g, b);
+                let p = Pixel { color, x, y };
+                colors_vec.push(p);
+            }
+        }
+        let res = write_png(
+            image_width,
+            image_height,
+            &colors_vec,
+            Path::new("images/test_gradient.png"),
+        );
+        assert!(res.is_ok())
     }
 }

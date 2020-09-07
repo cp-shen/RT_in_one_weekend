@@ -58,6 +58,10 @@ impl ops::MulAssign<f32> for Vec3 {
 }
 
 impl Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
+        Vec3(x, y, z)
+    }
+
     pub fn x(&self) -> f32 {
         self.0
     }
@@ -96,11 +100,11 @@ impl Vec3 {
         *self * (1_f32 / self.length())
     }
 
-    pub fn float_color_to_8bit(&self) -> Vec<u8> {
+    pub fn float_color_to_8bit(&self) -> (u8, u8, u8) {
         let r = self.0.min(1_f32).max(0_f32) * 255_f32;
         let g = self.1.min(1_f32).max(0_f32) * 255_f32;
         let b = self.2.min(1_f32).max(0_f32) * 255_f32;
-        vec![r.round() as u8, g.round() as u8, b.round() as u8]
+        (r.round() as u8, g.round() as u8, b.round() as u8)
     }
 
     pub fn lerp(a: Self, b: Self, t: f32) -> Vec3 {
