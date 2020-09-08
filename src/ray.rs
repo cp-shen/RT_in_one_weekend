@@ -54,7 +54,7 @@ mod tests {
 
         // Camera
         const viewport_height: f32 = 2.0;
-        const viewport_width: f32 = viewport_height / aspect_ratio;
+        const viewport_width: f32 = viewport_height * aspect_ratio;
         const focal_length: f32 = 1.0;
 
         const origin: Point3 = Vec3(0_f32, 0_f32, 0_f32);
