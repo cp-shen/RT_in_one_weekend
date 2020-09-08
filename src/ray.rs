@@ -12,7 +12,12 @@ impl Ray {
         self.orig + self.dir * t
     }
 
-    pub fn hit_sphere(&self, center: vec3::Point3, radius: f32) -> bool {
+    /// returns hit point if hit
+    pub fn hit_sphere(
+        &self,
+        center: vec3::Point3,
+        radius: f32,
+    ) -> Option<vec3::Point3> {
         let r = &self;
         let oc = r.orig - center;
         let a = r.dir.dot(r.dir);
@@ -20,7 +25,16 @@ impl Ray {
         let c = oc.dot(oc) - radius * radius;
         let discriminant = b * b - 4_f32 * a * c;
 
-        discriminant > 0_f32
+        if discriminant < 0_f32 {
+            return None;
+        } else {
+            let t = (-b - discriminant.sqrt()) / (2.0 * a);
+            if t > 0.0 {
+                return Some(r.at(t));
+            }
+        }
+
+        None
     }
 }
 
@@ -31,8 +45,18 @@ mod tests {
     use crate::vec3::*;
 
     fn ray_color(r: &Ray) -> Color {
-        if r.hit_sphere(Vec3(0_f32, 0_f32, -1_f32), 0.5_f32) {
-            return Vec3(1.0_f32, 0_f32, 0_f32);
+        let center = Vec3::new(0_f32, 0_f32, -1_f32);
+        let radius = 0.5_f32;
+        match r.hit_sphere(center, radius) {
+            Some(p) => {
+                let normal = (p - center).unit_vector();
+                return Color::new(
+                    normal.x() + 1.0,
+                    normal.y() + 1.0,
+                    normal.z() + 1.0,
+                ) * 0.5;
+            }
+            None => {}
         }
 
         let unit_direction = r.dir.unit_vector();
