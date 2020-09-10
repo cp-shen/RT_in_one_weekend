@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+//#![allow(dead_code)]
 
 use std::ops;
 
@@ -24,11 +24,11 @@ impl ops::Mul<f32> for Vec3 {
     }
 }
 
-impl ops::AddAssign<Vec3> for Vec3 {
-    fn add_assign(&mut self, rhs: Self) {
-        *self = *self + rhs;
-    }
-}
+// impl ops::AddAssign<Vec3> for Vec3 {
+//     fn add_assign(&mut self, rhs: Self) {
+//         *self = *self + rhs;
+//     }
+// }
 
 impl ops::Neg for Vec3 {
     type Output = Vec3;
@@ -45,17 +45,17 @@ impl ops::Sub<Vec3> for Vec3 {
     }
 }
 
-impl ops::SubAssign<Vec3> for Vec3 {
-    fn sub_assign(&mut self, rhs: Vec3) {
-        *self = *self - rhs;
-    }
-}
+// impl ops::SubAssign<Vec3> for Vec3 {
+//     fn sub_assign(&mut self, rhs: Vec3) {
+//         *self = *self - rhs;
+//     }
+// }
 
-impl ops::MulAssign<f32> for Vec3 {
-    fn mul_assign(&mut self, rhs: f32) {
-        *self = *self * rhs;
-    }
-}
+// impl ops::MulAssign<f32> for Vec3 {
+//     fn mul_assign(&mut self, rhs: f32) {
+//         *self = *self * rhs;
+//     }
+// }
 
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
