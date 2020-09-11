@@ -1,27 +1,40 @@
 use crate::ray::*;
 use crate::vec3::*;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, getset::CopyGetters, new)]
+#[getset(get_copy = "pub")]
 pub struct HitRecord {
-    pub point: Point3,
-    pub normal: Vec3,
-    pub t: f32,
+    point: Point3,
+    normal: Vec3,
+    t: f32,
 }
 
 pub trait Hittable {
     fn hit(&self, r: &Ray) -> Option<HitRecord>;
 }
 
+#[derive(Debug, getset::CopyGetters)]
+#[getset(get_copy = "pub")]
 pub struct Sphere {
-    pub center: Point3,
-    pub radius: f32,
+    center: Point3,
+    radius: f32,
+}
+
+impl Sphere {
+    pub fn new(center:Point3, radius : f32) -> Self {
+        assert!(radius > 0.0, "Radius of sphere is not valid: {}", radius);
+        Self{
+            center,
+            radius,
+        }
+    }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray) -> Option<HitRecord> {
-        let oc = r.orig - self.center;
-        let a = r.dir.dot(r.dir);
-        let b = 2_f32 * oc.dot(r.dir);
+        let oc = r.orig() - self.center;
+        let a = r.dir().dot(r.dir());
+        let b = 2_f32 * oc.dot(r.dir());
         let c = oc.dot(oc) - self.radius * self.radius;
         let discriminant = b * b - 4_f32 * a * c;
 
@@ -36,7 +49,7 @@ impl Hittable for Sphere {
                 let point = r.at(t);
                 let normal = (point - self.center).unit_vector();
                 let hrec = HitRecord { t, point, normal };
-                assert!(normal.dot(r.dir) < 0.0);
+                assert!(normal.dot(r.dir()) < 0.0);
                 return Some(hrec);
             }
         }
@@ -45,8 +58,10 @@ impl Hittable for Sphere {
     }
 }
 
+#[derive(getset::MutGetters)]
 pub struct HittableList {
-    pub list: Vec<Box<dyn Hittable>>,
+    #[getset(get_mut = "pub")]
+    list: Vec<Box<dyn Hittable>>,
 }
 
 impl Hittable for HittableList {
@@ -67,10 +82,9 @@ impl Hittable for HittableList {
         ret
     }
 }
+
 impl HittableList {
     pub fn new() -> Self {
-        HittableList {
-            list : Vec::new()
-        }
+        HittableList { list: Vec::new() }
     }
 }

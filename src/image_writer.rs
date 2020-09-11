@@ -7,11 +7,12 @@ const NL: &'static str = "\r\n";
 #[cfg(not(windows))]
 const NL: &'static str = "\n";
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, getset::CopyGetters, new)]
+#[getset(get_copy = "pub")]
 pub struct Pixel {
-    pub x: u32, //left is zero
-    pub y: u32, //bottom is zero
-    pub color: crate::vec3::Color,
+    x: u32, //left is zero
+    y: u32, //bottom is zero
+    color: crate::vec3::Color,
 }
 
 #[allow(dead_code)]

@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate derive_new;
+
 mod camera;
 mod image_writer;
 mod ray;
@@ -16,10 +19,10 @@ fn main() {
 fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
     match world.hit(r) {
         None => {}
-        Some(rec) => return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5,
+        Some(rec) => return (rec.normal() + Color::new(1.0, 1.0, 1.0)) * 0.5,
     }
 
-    let unit_direction = r.dir.unit_vector();
+    let unit_direction = r.dir().unit_vector();
     let t: f32 = 0.5_f32 * (unit_direction.y() + 1_f32);
 
     let sky_blue = Vec3(0.5_f32, 0.7_f32, 1.0_f32);
@@ -36,17 +39,11 @@ fn draw() {
     const image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
 
     // World
-    let s1 = shapes::Sphere {
-        center: vec3::Point3::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-    };
-    let s2 = shapes::Sphere {
-        center: vec3::Point3::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-    };
+    let s1 = shapes::Sphere::new(vec3::Point3::new(0.0, 0.0, -1.0), 0.5);
+    let s2 = shapes::Sphere::new(vec3::Point3::new(0.0, -100.5, -1.0), 100.0);
     let mut world = shapes::HittableList::new();
-    world.list.push(Box::new(s1));
-    world.list.push(Box::new(s2));
+    world.list_mut().push(Box::new(s1));
+    world.list_mut().push(Box::new(s2));
 
     // Camera
     const viewport_height: f32 = 2.0;
@@ -68,12 +65,12 @@ fn draw() {
         for i in 0..image_width {
             let u = i as f32 / (image_width - 1) as f32;
             let v = j as f32 / (image_height - 1) as f32;
-            let r = Ray {
-                orig: origin,
-                dir: lower_left_corner + horizontal * u + vertical * v - origin,
-            };
+            let r = Ray::new(
+                origin,
+                lower_left_corner + horizontal * u + vertical * v - origin,
+            );
             let color = ray_color(&r, &world);
-            pix_vec.push(Pixel { color, x: i, y: j });
+            pix_vec.push(Pixel::new(i, j, color));
         }
     }
 

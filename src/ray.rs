@@ -1,14 +1,23 @@
-//#![allow(dead_code)]
-use crate::vec3;
+use crate::vec3::*;
 
+#[derive(getset::CopyGetters)]
 pub struct Ray {
-    pub orig: vec3::Point3,
-    pub dir: vec3::Vec3,
+    #[getset(get_copy = "pub")]
+    orig: Point3,
+    #[getset(get_copy = "pub")]
+    dir: Vec3,
 }
 
 impl Ray {
-    pub fn at(&self, t: f32) -> vec3::Point3 {
+    pub fn at(&self, t: f32) -> Point3 {
         self.orig + self.dir * t
+    }
+
+    pub fn new(orig: Vec3, dir: Vec3) -> Self {
+        Self {
+            orig,
+            dir: dir.unit_vector(),
+        }
     }
 }
 

@@ -1,11 +1,13 @@
 use crate::ray::*;
 use crate::vec3::*;
 
+#[derive(getset::CopyGetters)]
+#[getset(get_copy = "pub")]
 pub struct Camera {
-    pub orig: Point3,
-    pub lower_left_corner: Point3,
-    pub horizontal: Vec3,
-    pub vertical: Vec3,
+    orig: Point3,
+    lower_left_corner: Point3,
+    horizontal: Vec3,
+    vertical: Vec3,
 }
 
 impl Default for Camera {
@@ -40,6 +42,6 @@ impl Camera {
         let dir =
             self.lower_left_corner + self.horizontal * u + self.vertical * v
                 - orig;
-        Ray { orig, dir }
+        Ray::new(orig, dir)
     }
 }
