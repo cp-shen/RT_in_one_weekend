@@ -25,7 +25,7 @@ impl Hittable for Sphere {
         let c = oc.dot(oc) - self.radius * self.radius;
         let discriminant = b * b - 4_f32 * a * c;
 
-        if discriminant < 0_f32 {
+        if discriminant <= 0_f32 {
             return None;
         } else {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
@@ -34,8 +34,9 @@ impl Hittable for Sphere {
             if t1 > 0.0 && t2 > 0.0 {
                 let t = t1.min(t2);
                 let point = r.at(t);
-                let normal = point - self.center;
+                let normal = (point - self.center).unit_vector();
                 let hrec = HitRecord { t, point, normal };
+                assert!(normal.dot(r.dir) < 0.0);
                 return Some(hrec);
             }
         }

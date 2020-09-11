@@ -6,8 +6,8 @@ mod vec3;
 
 use crate::image_writer::*;
 use crate::ray::Ray;
-use crate::vec3::*;
 use crate::shapes::*;
+use crate::vec3::*;
 
 fn main() {
     draw();
@@ -16,9 +16,7 @@ fn main() {
 fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
     match world.hit(r) {
         None => {}
-        Some(rec) => {
-            return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5
-        }
+        Some(rec) => return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5,
     }
 
     let unit_direction = r.dir.unit_vector();
