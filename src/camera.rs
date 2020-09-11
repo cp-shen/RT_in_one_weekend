@@ -37,7 +37,7 @@ impl Default for Camera {
 }
 
 impl Camera {
-    fn get_ray(&self, u: f32, v: f32) -> Ray {
+    pub fn get_ray(&self, u: f32, v: f32) -> Ray {
         let orig = self.orig;
         let dir =
             self.lower_left_corner + self.horizontal * u + self.vertical * v
