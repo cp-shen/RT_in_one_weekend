@@ -44,7 +44,7 @@ impl Hittable for Sphere {
             let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
             let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
 
-            if t1 > 0.0 && t2 > 0.0 {
+            if t1 > 0.001 && t2 > 0.001 {
                 let t = t1.min(t2);
                 let point = r.at(t);
                 let normal = (point - self.center).unit_vector();

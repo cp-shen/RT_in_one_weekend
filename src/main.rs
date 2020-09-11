@@ -18,10 +18,33 @@ fn main() {
     draw();
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+fn ray_color_normal(r: &Ray, world: &dyn Hittable) -> Color {
     match world.hit(r) {
         None => {}
         Some(rec) => return (rec.normal() + Color::new(1.0, 1.0, 1.0)) * 0.5,
+    }
+
+    let unit_direction = r.dir().unit_vector();
+    let t: f32 = 0.5_f32 * (unit_direction.y() + 1_f32);
+
+    let sky_blue = Vec3(0.5_f32, 0.7_f32, 1.0_f32);
+    let white = Vec3(1_f32, 1_f32, 1_f32);
+    Color::lerp(white, sky_blue, t)
+}
+
+fn ray_color_matte(r: &Ray, world: &dyn Hittable, depth: u32) -> Color {
+    if depth <= 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
+    match world.hit(r) {
+        None => {}
+        Some(rec) => {
+            let target =
+                rec.point() + rec.normal() + random::random_in_unit_shpere();
+            let next_ray = Ray::new(rec.point(), target - rec.point());
+            return ray_color_matte(&next_ray, world, depth - 1) * 0.5;
+        }
     }
 
     let unit_direction = r.dir().unit_vector();
@@ -40,6 +63,7 @@ fn draw() {
     const image_width: u32 = 400;
     const image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
     const sample_per_pixel: u32 = 100;
+    const max_depth: u32 = 50;
 
     // World
     let s1 = shapes::Sphere::new(vec3::Point3::new(0.0, 0.0, -1.0), 0.5);
@@ -60,7 +84,7 @@ fn draw() {
             let u = i as f32 / (image_width - 1) as f32;
             let v = j as f32 / (image_height - 1) as f32;
             let r = cam.get_ray(u, v);
-            let color = ray_color(&r, &world);
+            let color = ray_color_matte(&r, &world, max_depth);
             pix_vec.push(Pixel::new(i, j, color));
 
             let color_multisample = (0..sample_per_pixel)
@@ -70,7 +94,8 @@ fn draw() {
                     let v = (j as f32 + random::random_float())
                         / (image_height - 1) as f32;
                     let r = cam.get_ray(u, v);
-                    ray_color(&r, &world) * (1.0 / sample_per_pixel as f32)
+                    ray_color_matte(&r, &world, max_depth)
+                        * (1.0 / sample_per_pixel as f32)
                 })
                 .fold(Color::new(0.0, 0.0, 0.0), |c1, c2| c1 + c2);
             pix_vec_multisample.push(Pixel::new(i, j, color_multisample));
@@ -90,6 +115,18 @@ fn draw() {
         image_height,
         &pix_vec_multisample,
         std::path::Path::new("images/blue_sky_multisample.png"),
+    );
+    assert!(res.is_ok());
+
+    let pix_vec_multisample_gamma: Vec<Pixel> = pix_vec_multisample
+        .iter()
+        .map(|p| Pixel::new(p.x(), p.y(), p.color().gamma_correct(2)))
+        .collect();
+    let res = crate::image_writer::write_png(
+        image_width,
+        image_height,
+        &pix_vec_multisample_gamma,
+        std::path::Path::new("images/blue_sky_multisample_gamma2.png"),
     );
     assert!(res.is_ok());
 

@@ -27,7 +27,7 @@ pub fn write_png(
     pixels.iter().for_each(|p| {
         assert!(p.x < w);
         assert!(p.y < h);
-        let c = p.color.float_color_to_8bit();
+        let c = p.color.to_8bit_color();
         let color = Rgb([c.0, c.1, c.2]);
         img.put_pixel(p.x, h - p.y - 1, color);
     });
@@ -80,7 +80,7 @@ pub fn write_ppm(
             if i as u32 % w == 0 {
                 color_str.push_str(NL);
             }
-            let color = pixel.color.float_color_to_8bit();
+            let color = pixel.color.to_8bit_color();
             color_str.push_str(
                 format!("{}\t{}\t{}\t", color.0, color.1, color.2).as_str(),
             );

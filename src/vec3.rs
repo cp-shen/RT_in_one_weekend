@@ -92,13 +92,18 @@ impl Vec3 {
         )
     }
 
+    pub fn gamma_correct(&self, gamma: u32) -> Self {
+        let pow = 1.0 / gamma as f32;
+        Color::new(self.0.powf(pow), self.1.powf(pow), self.2.powf(pow))
+    }
+
     pub fn unit_vector(&self) -> Vec3 {
         assert!(self.length() > 0_f32, "Vector length is zero!");
 
         *self * (1_f32 / self.length())
     }
 
-    pub fn float_color_to_8bit(&self) -> (u8, u8, u8) {
+    pub fn to_8bit_color(&self) -> (u8, u8, u8) {
         let r = self.0.min(1_f32).max(0_f32) * 255_f32;
         let g = self.1.min(1_f32).max(0_f32) * 255_f32;
         let b = self.2.min(1_f32).max(0_f32) * 255_f32;
