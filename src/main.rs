@@ -3,6 +3,7 @@ extern crate derive_new;
 
 mod camera;
 mod image_writer;
+mod material;
 mod random;
 mod ray;
 mod shapes;
@@ -41,7 +42,8 @@ fn ray_color_matte(r: &Ray, world: &dyn Hittable, depth: u32) -> Color {
         None => {}
         Some(rec) => {
             let target =
-                rec.point() + rec.normal() + random::random_in_unit_shpere();
+                // rec.point() + rec.normal() + random::random_in_unit_shpere();
+                rec.point() + rec.normal() + random::random_unit_vector();
             let next_ray = Ray::new(rec.point(), target - rec.point());
             return ray_color_matte(&next_ray, world, depth - 1) * 0.5;
         }
@@ -66,8 +68,25 @@ fn draw() {
     const max_depth: u32 = 50;
 
     // World
-    let s1 = shapes::Sphere::new(vec3::Point3::new(0.0, 0.0, -1.0), 0.5);
-    let s2 = shapes::Sphere::new(vec3::Point3::new(0.0, -100.5, -1.0), 100.0);
+    use crate::material::*;
+    let m1 = Lambertian::new(Color::new(0.7, 0.7, 0.3));
+    let m2 = Lambertian::new(Color::new(0.8, 0.8, 0.0));
+
+    use std::rc::Rc;
+    let m1 = Rc::new(m1) as Rc<dyn Material>;
+    let m2 = Rc::new(m2) as Rc<dyn Material>;
+
+    let s1 = shapes::Sphere::new(
+        vec3::Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        Rc::clone(&m1),
+    );
+    let s2 = shapes::Sphere::new(
+        vec3::Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        Rc::clone(&m2),
+    );
+
     let mut world = shapes::HittableList::new();
     world.list_mut().push(Box::new(s1));
     world.list_mut().push(Box::new(s2));
@@ -132,3 +151,4 @@ fn draw() {
 
     println!("Done!")
 }
+

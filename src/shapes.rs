@@ -1,31 +1,45 @@
+use crate::material::Material;
 use crate::ray::*;
 use crate::vec3::*;
+use std::rc::Rc;
 
-#[derive(Copy, Clone, Debug, getset::CopyGetters, new)]
-#[getset(get_copy = "pub")]
+#[derive(getset::CopyGetters, getset::Getters, new, Clone)]
 pub struct HitRecord {
+    #[getset(get_copy = "pub")]
     point: Point3,
+    #[getset(get_copy = "pub")]
     normal: Vec3,
+    #[getset(get_copy = "pub")]
     t: f32,
+    #[getset(get = "pub")]
+    material: Rc<dyn Material>,
 }
 
 pub trait Hittable {
     fn hit(&self, r: &Ray) -> Option<HitRecord>;
 }
 
-#[derive(Debug, getset::CopyGetters)]
-#[getset(get_copy = "pub")]
+#[derive(getset::CopyGetters, getset::Getters)]
 pub struct Sphere {
+    #[getset(get_copy = "pub")]
     center: Point3,
+    #[getset(get_copy = "pub")]
     radius: f32,
+    #[getset(get = "pub")]
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center:Point3, radius : f32) -> Self {
+    pub fn new(
+        center: Point3,
+        radius: f32,
+        material: Rc<dyn Material>,
+    ) -> Self {
         assert!(radius > 0.0, "Radius of sphere is not valid: {}", radius);
-        Self{
+        Self {
             center,
             radius,
+            material,
         }
     }
 }
@@ -48,7 +62,8 @@ impl Hittable for Sphere {
                 let t = t1.min(t2);
                 let point = r.at(t);
                 let normal = (point - self.center).unit_vector();
-                let hrec = HitRecord { t, point, normal };
+                let hrec =
+                    HitRecord::new(point, normal, t, Rc::clone(&self.material));
                 assert!(normal.dot(r.dir()) < 0.0);
                 return Some(hrec);
             }
@@ -58,9 +73,9 @@ impl Hittable for Sphere {
     }
 }
 
-#[derive(getset::MutGetters)]
+#[derive(getset::MutGetters, getset::Getters)]
 pub struct HittableList {
-    #[getset(get_mut = "pub")]
+    #[getset(get_mut = "pub", get = "pub")]
     list: Vec<Box<dyn Hittable>>,
 }
 
@@ -74,7 +89,7 @@ impl Hittable for HittableList {
             if let Some(hrec) = hrec_op {
                 if hrec.t < t {
                     t = hrec.t;
-                    ret = hrec_op;
+                    ret = Some(hrec);
                 }
             }
         });
