@@ -3,7 +3,7 @@
 /.vscode/
 /images/
 
-tags
+tags*
 *.ppm
 *.png
 *.jpeg

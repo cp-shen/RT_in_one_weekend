@@ -115,3 +115,8 @@ impl Vec3 {
         a * (1_f32 - t_clamped) + b * t_clamped
     }
 }
+
+pub fn reflect(v: Vec3, normal: Vec3) -> Vec3 {
+    let n = normal.unit_vector();
+    v - n * v.dot(n) * 2.0
+}
